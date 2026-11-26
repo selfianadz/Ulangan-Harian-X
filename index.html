@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ulangan Harian Pendidikan Pancasila</title>
+<style>
+:root{--bg:#f3f5fb;--card:#fff;--ink:#1d2433;--mute:#667085;--pri:#2f5bea;--pri2:#e8eefe;--ok:#12805c;--bad:#c62828;--line:#dde3f0}
+@media (prefers-color-scheme:dark){:root{--bg:#10131c;--card:#1a1f2d;--ink:#e8ebf4;--mute:#9aa4bb;--pri:#6b8cff;--pri2:#26304f;--ok:#4cd3a0;--bad:#ff7b7b;--line:#2b3348}}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+.wrap{max-width:720px;margin:0 auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:14px}
+h1{font-size:1.35rem;margin:0 0 4px}
+.mute{color:var(--mute);font-size:.92rem}
+label{display:block;font-weight:600;margin:14px 0 6px;font-size:.92rem}
+input[type=text]{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;font-size:1rem;background:var(--bg);color:var(--ink)}
+button{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:12px 18px;font-weight:600}
+.btn{background:var(--pri);color:#fff;width:100%;margin-top:18px}
+.btn.sec{background:var(--pri2);color:var(--pri)}
+.btn:disabled{opacity:.5}
+ul.rules{padding-left:20px;margin:12px 0 0;font-size:.93rem}
+.err{color:var(--bad);font-size:.9rem;margin-top:10px;min-height:1.2em}
+.hidden{display:none!important}
+.top{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0}
+.topin{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.timer{font-variant-numeric:tabular-nums;font-weight:700;font-size:1.15rem}
+.timer.low{color:var(--bad)}
+.bar{height:6px;background:var(--line);border-radius:6px;margin-top:8px;overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--pri);width:0}
+.qno{font-size:.85rem;color:var(--mute);font-weight:600;margin-bottom:6px}
+.qtext{white-space:pre-line;font-size:1.04rem;margin-bottom:14px}
+.opt{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;background:var(--bg);color:var(--ink);border:2px solid var(--line);margin-bottom:9px;padding:12px;font-weight:400}
+.opt b{flex:0 0 26px;height:26px;border-radius:50%;background:var(--line);display:flex;align-items:center;justify-content:center;font-size:.85rem}
+.opt.sel{border-color:var(--pri);background:var(--pri2)}
+.opt.sel b{background:var(--pri);color:#fff}
+.nav{display:flex;gap:10px}
+.nav button{flex:1}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(40px,1fr));gap:6px;margin-top:6px}
+.grid button{padding:9px 0;background:var(--bg);border:1px solid var(--line);color:var(--ink);font-weight:600}
+.grid button.done{background:var(--pri);color:#fff;border-color:var(--pri)}
+.grid button.cur{outline:3px solid var(--pri2);outline-offset:1px;border-color:var(--pri)}
+.warnbar{background:#fff3cd;color:#7a5200;border:1px solid #ffd966;border-radius:10px;padding:8px 12px;font-size:.88rem;margin-bottom:10px}
+#overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px}
+#overlay .box{background:var(--card);border-radius:16px;padding:24px;max-width:420px;text-align:center;border:3px solid var(--bad)}
+#overlay h2{color:var(--bad);margin:0 0 8px}
+.score{font-size:3rem;font-weight:800;color:var(--pri);line-height:1.1}
+.stat{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)}
+.stat:last-child{border:0}
+.flag{border-radius:10px;padding:12px;margin-top:12px;font-size:.93rem}
+.flag.ok{background:rgba(18,128,92,.12);color:var(--ok)}
+.flag.bad{background:rgba(198,40,40,.12);color:var(--bad)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- LOGIN -->
+<section id="login" class="card">
+  <h1>Ulangan Harian Pendidikan Pancasila</h1>
+  <div class="mute">25 soal pilihan ganda &bull; 25 menit</div>
+  <label for="nama">Nama lengkap</label>
+  <input type="text" id="nama" autocomplete="off" placeholder="Nama kamu">
+  <label for="kelas">Kelas</label>
+  <input type="text" id="kelas" autocomplete="off" placeholder="Contoh: X-B / 10B">
+  <label for="kode">Kode ujian</label>
+  <input type="text" id="kode" autocomplete="off" autocapitalize="characters" placeholder="Masukkan kode dari guru">
+  <ul class="rules">
+    <li>Soal diacak: 25 soal diambil acak dari 40 soal.</li>
+    <li>Waktu mengerjakan <b>25 menit</b>. Saat waktu habis, jawaban otomatis dikumpulkan.</li>
+    <li><b>Jangan keluar dari halaman ini</b> (pindah tab/aplikasi, buka notifikasi). Setiap kali keluar akan dihitung dan dilaporkan di hasil akhir.</li>
+    <li>Kamu boleh mengumpulkan lebih awal jika sudah selesai.</li>
+  </ul>
+  <div class="err" id="err"></div>
+  <button class="btn" id="mulai">Mulai Ujian</button>
+</section>
+
+<!-- QUIZ -->
+<section id="quiz" class="hidden">
+  <div class="top"><div class="topin">
+    <div><div style="font-weight:700" id="who"></div><div class="mute" id="prog"></div></div>
+    <div class="timer" id="timer">25:00</div>
+  </div><div class="bar"><i id="bar"></i></div></div>
+  <div class="warnbar hidden" id="warnbar"></div>
+  <div class="card">
+    <div class="qno" id="qno"></div>
+    <div class="qtext" id="qtext"></div>
+    <div id="opts"></div>
+  </div>
+  <div class="nav">
+    <button class="btn sec" id="prev" style="margin-top:0">&larr; Sebelumnya</button>
+    <button class="btn" id="next" style="margin-top:0">Berikutnya &rarr;</button>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <div class="mute">Navigasi soal</div>
+    <div class="grid" id="grid"></div>
+    <button class="btn" id="submit" style="background:var(--ok)">Kumpulkan Jawaban</button>
+  </div>
+</section>
+
+<!-- RESULT -->
+<section id="result" class="card hidden">
+  <h1>Ujian Selesai</h1>
+  <div class="mute" id="rwho"></div>
+  <div style="text-align:center;margin:18px 0">
+    <div class="score" id="rscore"></div>
+    <div class="mute">Nilai</div>
+  </div>
+  <div class="stat"><span>Jawaban benar</span><b id="rbenar"></b></div>
+  <div class="stat"><span>Jawaban salah</span><b id="rsalah"></b></div>
+  <div class="stat"><span>Tidak dijawab</span><b id="rkosong"></b></div>
+  <div class="stat"><span>Waktu pengerjaan</span><b id="rwaktu"></b></div>
+  <div class="stat"><span>Keluar dari halaman</span><b id="rkeluar"></b></div>
+  <div class="flag" id="rflag"></div>
+  <p class="mute" style="margin-top:14px">Screenshot halaman ini dan kirimkan kepada guru.</p>
+</section>
+
+</div>
+
+<div id="overlay" class="hidden"><div class="box">
+  <h2>&#9888; Peringatan!</h2>
+  <p id="ovtext"></p>
+  <button class="btn" id="ovok">Saya mengerti, lanjutkan</button>
+</div></div>
+
+<script>
+(function(){
+var CODE="PANCAXB", TOTAL=25, DURATION=25*60;
+var BANK=[{"q": "Dalam sidang parlemen, Perdana Menteri Jepang Koiso, mengumumkan bahwa Jepang akan memberikan kemerdekaan kepada Indonesia. Sebagai bentuk usaha, dibentuklah badan yang dinamai BPUPK. Ketua badan tersebut adalah", "o": ["Soekarno", "R.P Soeroso", "Radjiman Wedyodiningrat", "Moh. Hatta", "Moh. Yamin"]}, {"q": "Badan Penyelidik Usaha-Usaha Persiapan Kemerdekaan mengadakan sidang sebanyak dua kalo sidang resmi dan satu kali sidang tidak resmi. Sidang resmi yang pertama dilaksanakan tanggal", "o": ["1 Maret 1945", "29 Mei 1945", "2 Juni 1945", "10 - 17 Juli 1945", "18 Agustus 1945"]}, {"q": "Sidang pertama BPUPKI membahas tentang", "o": ["perumusan dasar negara", "memilih presiden dan wakil presiden", "perumusan tujuan negara", "merumuskan UUD 1945", "pembentukan pemerintahan RI"]}, {"q": "Jepang mengumumkan pembentukan BPUPKI untuk menyelidiki usaha-usaha persiapan kemerdekaan pada tanggal", "o": ["1 April 1945", "1 Mei 1945", "1 Juni 1945", "1 Maret 1945", "1 Februari 1945"]}, {"q": "Perhatikan pernyataan berikut!\nPeri kebangsaan\nPeri kemanusiaan\nPeri ketuhanan\nMusyawarah\nKeadilan sosial\nPernyataan di atas yang merupakan prinsip dasar negara yang disampaikan oleh Soepomo dalam sidang BPUPKI adalah", "o": ["Peri Ketuhanan dan Musyawarah", "Peri kemanusiaan dan Peri ketuhanan", "Keadilan sosial dan Peri kebangsaan", "Musyawarah dan Keadilan Sosial", "Peri kebangsaan dan Peri kemanusiaan"]}, {"q": "BPUPKI didirikan atas usul perdana Menteri Jepang, yaitu Perdana Menteri Koiso dalam sidang parlemen yang menyampaikan pandangan bahwa Jepang akan memberikan kemerdekaan kepada bangsa Indonesia. Maka, setelah deklarasi 1 Maret 1945 tersebut, Jepang membentuk badan yang dikenal dengan nama BPUPKI dan tujuan dibentuknya BPUPKI bagi Indonesia adalah", "o": ["membentuk panitia kecil", "mengadakan reses pasca sidang pertama", "menarik simpati dan hati rakyat Indonesia agar mau membantu Jepang melawan sekutu", "pembentukan undang-undang dasar", "mempelajari dan menyelidiki persoalan-persoalan penting yang berkaitan dengan pembentukan negara Indonesia Merdeka"]}, {"q": "Hasil kerja panitia sembilan adalah", "o": ["GBHN", "UUD NRI 1945", "Piagam Jakarta", "Pancasila", "KNIP"]}, {"q": "Badan Penyelidik Usaha-Usaha Persiapan Kemerdekaan mengadakan sidang sebanyak dua kali sidang resmi dan satu kali sidang tidak resmi. Sidang resmi yang kedua dilaksanakan tanggal", "o": ["29 Mei 1945", "1 Maret 1945", "2 Juni 1945", "10 - 17 Juli 1945", "18 Agustus 1945"]}, {"q": "Moh. Yamin memberikan usulan rumusan dasar negara pada tanggal", "o": ["24 April 1945", "29 Mei 1945", "31 Mei 1945", "30 Mei 1945", "1 Juni 1945"]}, {"q": "Pancasila mengandung nilai-nilai penting. Salah satu nilai yang termuat dalam sila ketiga adalah", "o": ["Persatuan", "Demokrasi", "Ketuhanan", "Kebangsaan", "Keadilan sosial"]}, {"q": "Tokoh yang berperan penting dalam menyampaikan aspirasi mengenai perubahan rumusan sila pertama demi menjaga persatuan bangsa adalah ....", "o": ["Ki Hajar Dewantara", "Moh. Hatta", "Soepomo", "Mohammad Yamin", "Soekarno"]}, {"q": "Rumusan sila pertama dalam Piagam Jakarta sebelum mengalami perubahan adalah", "o": ["Ketuhanan Yang Maha Esa", "Ketuhanan dengan kewajiban menjalankan syariat Islam bagi pemeluk-pemeluknya", "Persatuan Indonesia", "Kerakyatan yang Dipimpin oleh Hikmat Kebijaksanaan dalam Permusyawaratan/ Perwakilan", "Keadilan sosial bagi seluruh rakyat Indonesia"]}, {"q": "Perubahan rumusan sila pertama dilakukan terutama untuk", "o": ["memenuhi tuntutan pemerintah Jepang", "menjaga persatuan dan kesatuan bangsa", "menghapus nilai-nilai keagamaan", "mengutamakan kepentingan kelompok tertentu", "mengubah bentuk negara Indonesia"]}, {"q": "Salah satu perbedaan antara rumusan Pancasila dalam Piagam Jakarta dan Pembukaan UUD NRI Tahun 1945 terdapat pada sila", "o": ["Pertama", "Kedua", "Ketiga", "Keempat", "Kelima"]}, {"q": "Dalam pidatonya pada tanggal 31 Mei 1945, Dr. Soepomo mengemukakan gagasan mengenai negara integralistik (persatuan), yang maknanya adalah...", "o": ["Negara melindungi kepentingan golongan mayoritas saja", "Negara menyatu dengan seluruh rakyat dan mengatasi semua golongan", "Negara memisahkan urusan pemerintahan dari kehidupan sosial", "Negara menyerahkan seluruh kekuasaan ekonomi kepada pihak swasta", "Negara berbentuk federasi dengan otonomi mutlak tiap daerah"]}, {"q": "Pada 1 Juni 1945, Ir. Soekarno menawarkan pemerasan lima prinsip dasar negara menjadi Trisila, dan apabila diperas lagi menjadi satu prinsip (Ekasila) yaitu...", "o": ["Keadilan sosial", "Kemanusiaan", "Gotong royong", "Ketuhanan", "Kebangsaan"]}, {"q": "Perhatikan pernyataan berikut:\n1) Mengutamakan kepentingan bangsa di atas kepentingan pribadi\n2) Bersikap terbuka dan menghargai perbedaan pendapat\n3) Memaksakan kehendak kelompok mayoritas\n4) Mengutamakan musyawarah untuk mencapai mufakat\nNilai keteladanan para perumus Pancasila ditunjukkan oleh nomor...", "o": ["1, 2, dan 3", "1, 2, dan 4", "1, 3, dan 4", "2, 3, dan 4", "1, 2, 3, dan 4"]}, {"q": "Penerapan nilai sila kedua Pancasila dalam lingkungan sekolah dapat diwujudkan melalui sikap...", "o": ["Melaksanakan ibadah tepat waktu", "Berteman tanpa membeda-bedakan latar belakang suku, agama, maupun status sosial", "Mengutamakan teman satu daerah dalam pemilihan pengurus OSIS", "Menyebarkan rumor tentang teman sekelas di grup obrolan", "Bekerja sama dengan kelompok yang berbeda pendapat"]}, {"q": "Ketika terjadi perbedaan pilihan tujuan wisata kelas, ketua kelas mengajak seluruh anggota berdiskusi hingga tercapai kesepakatan bersama. Sikap tersebut sesuai dengan pengamalan Pancasila sila ke-...", "o": ["Pertama", "Kedua", "Ketiga", "Keempat", "Kelima"]}, {"q": "Sikap konsumtif berlebihan dan gaya hidup hedonis bertentangan dengan nilai Pancasila, khususnya sila kelima, karena...", "o": ["Mengurangi minat masyarakat terhadap budaya asing", "Mengabaikan prinsip kesederhanaan, kerja keras, dan keadilan sosial", "Menghambat perkembangan teknologi informasi", "Memperkuat solidaritas antarwarga masyarakat", "Meningkatkan pemerataan kesejahteraan nasional"]}, {"q": "Dampak positif jangka panjang apabila mayoritas warga negara memiliki kesadaran hukum yang tinggi adalah...", "o": ["Meningkatnya kebutuhan pembangunan lembaga pemasyarakatan baru", "Berkurangnya beban aparat penegak hukum karena ketertiban tumbuh dari swadaya masyarakat", "Semakin banyaknya peraturan daerah yang bersifat membatasi hak warga", "Melemahnya peran norma agama dan norma kesopanan di masyarakat", "Meningkatnya ketergantungan masyarakat pada pengawasan aparat keamanan"]}, {"q": "Hubungan antara Pancasila dan Pembukaan UUD NRI Tahun 1945 bersifat...", "o": ["Sementara dan dapat diubah sewaktu-waktu", "Terpisah karena disahkan oleh lembaga yang berbeda", "Organis dan tidak terpisahkan karena rumusan Pancasila tercantum dalam alinea keempat Pembukaan UUD NRI Tahun 1945", "Kondisional tergantung kebijakan pemerintah yang sedang berkuasa", "Hierarkis dengan UUD NRI Tahun 1945 berada di atas Pancasila"]}, {"q": "Kesadaran hukum pada hakikatnya merupakan nilai-nilai yang hidup dalam diri manusia mengenai hukum yang ada atau hukum yang diharapkan ada. Makna paling tepat dari kesadaran hukum adalah...", "o": ["Ketaatan warga negara karena takut dijatuhi hukuman penjara atau denda", "Pemahaman dan keyakinan diri bahwa aturan hukum memang baik, adil, dan perlu ditaati secara sukarela", "Pengetahuan seseorang mengenai seluruh pasal dalam Kitab Undang-Undang Hukum Pidana", "Kemampuan aparat penegak hukum dalam menangkap pelaku kejahatan", "Kepatuhan masyarakat yang hanya muncul ketika ada pengawasan ketat dari petugas"]}, {"q": "Norma merupakan kaidah atau aturan yang berlaku dalam masyarakat untuk menciptakan ketertiban. Norma yang bersumber dari hati nurani manusia dan memiliki sanksi berupa rasa penyesalan adalah norma...", "o": ["Agama", "Kesusilaan", "Kesopanan", "Hukum", "Adat istiadat"]}, {"q": "Ciri khas norma hukum yang membedakannya dengan norma sosial lainnya adalah...", "o": ["Bersumber dari wahyu Tuhan Yang Maha Esa", "Berlaku hanya di lingkungan keluarga dan kerabat", "Sanksinya bersifat tegas, nyata, dan memaksa melalui aparat penegak hukum", "Tidak memiliki aturan tertulis yang jelas", "Sanksinya hanya berupa cemoohan dari masyarakat sekitar"]}, {"q": "Tujuan utama dibentuknya hukum dalam kehidupan bernegara menurut teori tujuan hukum adalah...", "o": ["Membatasi seluruh kebebasan warga negara", "Melindungi kepentingan penguasa dan golongan tertentu", "Mewujudkan keadilan, kepastian hukum, dan kemanfaatan bagi masyarakat", "Menghilangkan seluruh perbedaan pendapat di masyarakat", "Menggantikan peran norma agama dan norma kesopanan"]}, {"q": "Prinsip persamaan kedudukan warga negara di hadapan hukum (equality before the law) mengandung makna bahwa...", "o": ["Pejabat negara mendapatkan keringanan hukuman jika melanggar aturan", "Setiap warga negara memiliki kedudukan yang sama dan wajib menjunjung hukum tanpa pengecualian", "Masyarakat kurang mampu dibebaskan dari seluruh kewajiban hukum", "Penegakan hukum hanya berlaku bagi warga negara yang berdomisili di ibu kota", "Hukum dapat disesuaikan dengan status sosial pelanggarnya"]}, {"q": "Berdasarkan UU Nomor 12 Tahun 2011 tentang Pembentukan Peraturan Perundang-undangan, peraturan perundang-undangan tertinggi di Indonesia adalah...", "o": ["Ketetapan MPR", "Undang-Undang (UU)", "Peraturan Pemerintah Pengganti Undang-Undang (Perppu)", "UUD NRI Tahun 1945", "Peraturan Presiden (Perpres)"]}, {"q": "Peraturan yang ditetapkan oleh Presiden dalam hal ihwal kegentingan yang memaksa dan memiliki kedudukan sejajar dengan Undang-Undang adalah...", "o": ["Peraturan Pemerintah (PP)", "Peraturan Presiden (Perpres)", "Peraturan Pemerintah Pengganti Undang-Undang (Perppu)", "Keputusan Presiden (Keppres)", "Peraturan Daerah (Perda)"]}, {"q": "Perhatikan tahapan kesadaran hukum berikut:\n1) Pengetahuan hukum (law awareness)\n2) Pemahaman hukum (law acquaintance)\n3) Sikap hukum (legal attitude)\n4) Perilaku hukum (legal behavior)\nTingkatan tertinggi dari kesadaran hukum seseorang ditunjukkan oleh nomor...", "o": ["1", "2", "3", "4", "1 dan 2"]}, {"q": "Contoh penerapan budaya taat hukum di lingkungan sekolah adalah...", "o": ["Datang terlambat saat upacara bendera hari Senin", "Mengenakan seragam sesuai tata tertib dan menjaga ketertiban kelas", "Mencoret-coret dinding sekolah sebagai bentuk ekspresi seni", "Menyontek saat ujian agar memperoleh nilai tinggi", "Membawa kendaraan bermotor ke sekolah meskipun belum memiliki SIM"]}, {"q": "Dalam kehidupan bermasyarakat, norma berfungsi sebagai pedoman bertingkah laku. Norma yang bersumber dari pergaulan masyarakat sehari-hari dan memiliki sanksi berupa teguran, cemoohan, atau pengucilan adalah norma...", "o": ["Agama", "Hukum", "Kesopanan", "Kesusilaan", "Konstitusi"]}, {"q": "Unsur-unsur yang melekat pada kaidah hukum sehingga membedakannya dengan kaidah sosial lain adalah...", "o": ["Dibuat oleh tokoh masyarakat dan bersifat sukarela", "Bersifat memaksa, dibuat oleh lembaga berwenang, dan memiliki sanksi tegas", "Berasal dari kitab suci dan sanksinya diterima di akhirat", "Hanya mengatur hubungan antarindividu dalam lingkungan keluarga", "Tidak memiliki akibat hukum apabila dilanggar oleh warga negara"]}, {"q": "Dalam hierarki peraturan perundang-undangan menurut UU Nomor 12 Tahun 2011, kedudukan Peraturan Pemerintah (PP) berada tepat di bawah...", "o": ["Peraturan Presiden", "Peraturan Daerah Provinsi", "Undang-Undang / Perppu", "Ketetapan MPR", "UUD NRI Tahun 1945"]}, {"q": "Seseorang dikatakan memiliki pemahaman hukum (law acquaintance) apabila ia...", "o": ["Sekadar mendengar bahwa ada larangan membuang sampah sembarangan", "Mengetahui isi, tujuan, dan manfaat aturan hukum bagi ketertiban bersama", "Menaati peraturan lalu lintas hanya saat ada razia petugas", "Melanggar aturan karena merasa tidak akan ketahuan", "Memprotes seluruh peraturan yang dibuat oleh pemerintah daerah"]}, {"q": "Perbedaan mendasar antara kepatuhan hukum dan kesadaran hukum terletak pada...", "o": ["Jenis sanksi yang diterima pelanggar", "Lembaga yang menyusun peraturan perundang-undangan", "Dorongan internal; kesadaran hukum lahir dari keyakinan diri tanpa paksaan", "Tempat berlakunya peraturan tersebut", "Waktu pengesahan undang-undang oleh pemerintah"]}, {"q": "Salah satu bentuk partisipasi pelajar dalam mendukung penegakan hukum di sekolah adalah...", "o": ["Melindungi teman yang terbukti melakukan perundungan (bullying)", "Melaporkan tindakan perundungan atau pelanggaran berat kepada guru/BK", "Ikut serta dalam tawuran antarpelajar demi solidaritas kelompok", "Memalsukan tanda tangan orang tua pada surat izin sekolah", "Merusak fasilitas laboratorium saat jam pelajaran kosong"]}, {"q": "Upaya meningkatkan kesadaran hukum di lingkungan sekolah yang bersifat edukatif dan partisipatif adalah...", "o": ["Menghapus seluruh tata tertib sekolah agar tidak terjadi pelanggaran", "Melibatkan perwakilan siswa dalam merumuskan kesepakatan kelas dan mengadakan sosialisasi sadar hukum", "Memberikan sanksi pengeluaran langsung bagi siswa yang terlambat satu kali", "Memasang kamera pengawas di setiap sudut tanpa menjelaskan tujuan tata tertib", "Menyerahkan pembinaan kedisiplinan siswa sepenuhnya kepada pihak kepolisian"]}, {"q": "Perhatikan dua situasi berikut:\n• Situasi 1: Budi mengenakan helm SNI saat mengendarai motor hanya ketika melihat ada razia polisi di perempatan jalan.\n• Situasi 2: Rina selalu mengenakan helm SNI setiap berkendara karena menyadari fungsi helm untuk melindungi keselamatan kepalanya.\nBerdasarkan kedua situasi tersebut, pernyataan yang paling tepat adalah...", "o": ["Budi memiliki kesadaran hukum tinggi, sedangkan Rina hanya memiliki kepatuhan hukum", "Budi menunjukkan kepatuhan hukum karena takut sanksi, sedangkan Rina menunjukkan kesadaran hukum", "Keduanya memiliki tingkat kesadaran hukum yang sama tinggi", "Rina hanya taat aturan karena ingin dipuji oleh pengguna jalan lain", "Budi dan Rina sama-sama belum memahami tujuan peraturan lalu lintas"]}, {"q": "Salah satu faktor yang memengaruhi rendahnya kesadaran hukum di sebagian masyarakat adalah...", "o": ["Tingginya tingkat pendidikan dan literasi digital warga negara", "Keteladanan yang baik dari tokoh masyarakat dan pejabat publik", "Sikap permisif terhadap pelanggaran kecil yang dianggap sebagai hal wajar", "Penyuluhan hukum yang dilakukan secara rutin hingga ke tingkat desa", "Sanksi hukum yang diterapkan secara adil tanpa pandang bulu"]}];
+var KEY="Q0NDR0hKSURDQ0VGR0dCRERFSEdIQ0NERkdHSkNFREZGSEhDQ0RFRw==";
+function answerOf(i){return atob(KEY).charCodeAt(i)-65-(i%7);}
+
+var $=function(id){return document.getElementById(id)};
+var S=null, tick=null, cur=0;
+
+function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function pad(n){return (n<10?"0":"")+n;}
+function fmt(s){return pad(Math.floor(s/60))+":"+pad(s%60);}
+
+function save(){try{sessionStorage.setItem("uh_pancaxb",JSON.stringify(S));}catch(e){}}
+function load(){try{var r=sessionStorage.getItem("uh_pancaxb");return r?JSON.parse(r):null;}catch(e){return null;}}
+
+$("mulai").onclick=function(){
+  var n=$("nama").value.trim(), k=$("kelas").value.trim(), c=$("kode").value.trim().toUpperCase();
+  if(!n||!k){$("err").textContent="Isi nama dan kelas terlebih dahulu.";return;}
+  if(c!==CODE){$("err").textContent="Kode ujian salah.";return;}
+  var idx=shuffle(BANK.map(function(_,i){return i;})).slice(0,TOTAL);
+  S={nama:n,kelas:k,order:idx,ans:{},start:Date.now(),leaves:0,done:false};
+  save();startQuiz();
+};
+
+function startQuiz(){
+  $("login").classList.add("hidden");
+  $("quiz").classList.remove("hidden");
+  $("who").textContent=S.nama+" ("+S.kelas+")";
+  cur=0;buildGrid();render();updateWarn();
+  clearInterval(tick);tick=setInterval(onTick,500);onTick();
+}
+
+function remaining(){return Math.max(0,DURATION-Math.floor((Date.now()-S.start)/1000));}
+function onTick(){
+  var r=remaining();
+  $("timer").textContent=fmt(r);
+  $("timer").classList.toggle("low",r<=120);
+  $("bar").style.width=((DURATION-r)/DURATION*100)+"%";
+  if(r<=0)finish(true);
+}
+
+function buildGrid(){
+  var g=$("grid");g.innerHTML="";
+  S.order.forEach(function(_,i){
+    var b=document.createElement("button");b.textContent=i+1;b.onclick=function(){cur=i;render();};g.appendChild(b);
+  });
+}
+function render(){
+  var qi=S.order[cur],q=BANK[qi];
+  $("qno").textContent="Soal "+(cur+1)+" dari "+TOTAL;
+  $("qtext").textContent=q.q;
+  var o=$("opts");o.innerHTML="";
+  q.o.forEach(function(t,j){
+    var b=document.createElement("button");
+    b.className="opt"+(S.ans[qi]===j?" sel":"");
+    var l=document.createElement("b");l.textContent="ABCDE"[j];
+    var s=document.createElement("span");s.textContent=t;
+    b.appendChild(l);b.appendChild(s);
+    b.onclick=function(){S.ans[qi]=j;save();render();};
+    o.appendChild(b);
+  });
+  var done=Object.keys(S.ans).length;
+  $("prog").textContent="Terjawab "+done+"/"+TOTAL;
+  var btns=$("grid").children;
+  for(var i=0;i<btns.length;i++){
+    btns[i].className=(S.ans[S.order[i]]!==undefined?"done":"")+(i===cur?" cur":"");
+  }
+  $("prev").disabled=cur===0;
+  $("next").disabled=cur===TOTAL-1;
+}
+$("prev").onclick=function(){if(cur>0){cur--;render();window.scrollTo(0,0);}};
+$("next").onclick=function(){if(cur<TOTAL-1){cur++;render();window.scrollTo(0,0);}};
+
+$("submit").onclick=function(){
+  var blank=TOTAL-Object.keys(S.ans).length;
+  var msg=blank>0?"Masih ada "+blank+" soal belum dijawab. Yakin ingin mengumpulkan?":"Kumpulkan jawaban sekarang?";
+  if(confirm(msg))finish(false);
+};
+
+// ---- Deteksi keluar halaman ----
+var lastLeave=0;
+function leave(){
+  if(!S||S.done||$("quiz").classList.contains("hidden"))return;
+  var now=Date.now();
+  if(now-lastLeave<1500)return; // hindari hitungan ganda (blur + visibilitychange)
+  lastLeave=now;
+  S.leaves++;save();updateWarn();
+  pendingWarn=true;
+}
+var pendingWarn=false;
+function comeBack(){
+  if(!pendingWarn||!S||S.done)return;
+  pendingWarn=false;
+  $("ovtext").innerHTML="Kamu terdeteksi <b>keluar dari halaman ujian</b>.<br>Total keluar halaman: <b>"+S.leaves+" kali</b>.<br>Hal ini akan dilaporkan kepada guru.";
+  $("overlay").classList.remove("hidden");
+}
+document.addEventListener("visibilitychange",function(){if(document.hidden)leave();else comeBack();});
+window.addEventListener("blur",leave);
+window.addEventListener("focus",comeBack);
+$("ovok").onclick=function(){$("overlay").classList.add("hidden");};
+function updateWarn(){
+  var w=$("warnbar");
+  if(S.leaves>0){w.classList.remove("hidden");w.textContent="Kamu sudah keluar halaman "+S.leaves+" kali. Tetap di halaman ini sampai selesai.";}
+  else w.classList.add("hidden");
+}
+// cegah klik kanan / salin
+document.addEventListener("contextmenu",function(e){e.preventDefault();});
+document.addEventListener("copy",function(e){if(S&&!S.done)e.preventDefault();});
+
+function finish(auto){
+  if(S.done&&!$("result").classList.contains("hidden"))return;
+  clearInterval(tick);
+  S.done=true;S.end=Date.now();save();
+  var benar=0,jawab=0;
+  S.order.forEach(function(qi){
+    if(S.ans[qi]!==undefined){jawab++;if(S.ans[qi]===answerOf(qi))benar++;}
+  });
+  var used=Math.min(DURATION,Math.floor((S.end-S.start)/1000));
+  $("quiz").classList.add("hidden");$("overlay").classList.add("hidden");
+  $("result").classList.remove("hidden");
+  $("rwho").textContent=S.nama+" \u2022 "+S.kelas+(auto?" \u2022 waktu habis, dikumpulkan otomatis":"");
+  $("rscore").textContent=Math.round(benar/TOTAL*100);
+  $("rbenar").textContent=benar+" dari "+TOTAL;
+  $("rsalah").textContent=jawab-benar;
+  $("rkosong").textContent=TOTAL-jawab;
+  $("rwaktu").textContent=fmt(used);
+  $("rkeluar").textContent=S.leaves+" kali";
+  var f=$("rflag");
+  if(S.leaves>0){f.className="flag bad";f.textContent="\u26A0 Kamu keluar dari halaman ujian sebanyak "+S.leaves+" kali selama mengerjakan. Hal ini tercatat dan akan menjadi catatan guru.";}
+  else{f.className="flag ok";f.textContent="\u2713 Kamu tidak keluar halaman selama ujian. Terima kasih sudah jujur!";}
+  window.scrollTo(0,0);
+}
+
+// pulihkan sesi bila halaman di-refresh
+var saved=load();
+if(saved&&!saved.done&&saved.order&&Date.now()-saved.start<DURATION*1000){
+  S=saved;S.leaves++;save();pendingWarn=true;startQuiz();
+  setTimeout(comeBack,300);
+}else if(saved&&saved.done){S=saved;finish(false);}
+})();
+</script>
+</body>
+</html>
